@@ -1,0 +1,71 @@
+services:
+
+  postgrest:
+    restart: always
+    image: "postgrest/postgrest:v12.0.2"
+    ports:
+      - "3000:3000"
+    links:
+      - postgres:postgres
+    environment:
+      PGRST_DB_URI: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/postgres"
+      PGRST_DB_SCHEMA: api
+      PGRST_DB_ANON_ROLE: webuser
+      PGRST_OPENAPI_SERVER_PROXY_URI: ${PGRST_OPENAPI_SERVER_PROXY_URI}
+      PGRST_DB_PRE_CONFIG: "postgrest.pre_config"
+      PGRST_OPENAPI_SECURITY_ACTIVE: "true"
+
+    depends_on:
+      - postgres
+
+
+  postgres:
+    restart: always
+    image: "postgres:16.2"
+    ports:
+        - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+
+      POSTGRES_EXTENSIONS: pgcrypto, pgjwt
+
+    volumes:
+      - ./config/pgjwt.control:/usr/share/postgresql/16/extension/pgjwt.control
+      - ./config/pgjwt--0.2.0-tfm.sql:/usr/share/postgresql/16/extension/pgjwt--0.2.0.sql
+      - ./config/pgcrypto.sql:/docker-entrypoint-initdb.d/00-pgcrypto.sql
+      - ./config/general.sql:/docker-entrypoint-initdb.d/01-general.sql
+      - ./config/postgrest-config.sql:/docker-entrypoint-initdb.d/11-postgrest-config.sql
+
+      - ./default/globals.sql:/docker-entrypoint-initdb.d/10-globals.sql
+      - ./default/structure.sql:/docker-entrypoint-initdb.d/20-structure.sql
+      - ./default/data.sql:/docker-entrypoint-initdb.d/30-data.sql
+      
+
+  pgadmin:
+    restart: always
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: 5050
+      SCRIPT_NAME: "/pgadmin"
+    ports:
+        - "5050:5050"
+    links:
+        - postgres:${PGADMIN_HOST_NAME}
+    depends_on:
+      - postgrest
+
+  swagger:
+    restart: always
+    image: swaggerapi/swagger-ui
+    ports:
+        - "4080:8080"
+    expose:
+        - "4080"
+    environment:
+        API_URL: ${PGRST_OPENAPI_SERVER_PROXY_URI}
+    depends_on:
+      - postgrest
