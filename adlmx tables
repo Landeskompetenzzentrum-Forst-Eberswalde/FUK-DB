@@ -1,0 +1,111 @@
+USE [adlmx]
+GO
+
+/****** Object:  Table [dbo].[channels]    Script Date: 03.06.2024 12:07:48 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[channels](
+       [id] [int] IDENTITY(1,1) NOT NULL,
+       [location] [varchar](256) NULL,
+       [name] [varchar](256) NULL,
+       [unit] [varchar](16) NULL,
+       [type] [int] NULL,
+       [bitsize] [int] NULL,
+       [formula] [varchar](256) NULL,
+       [saving_interval] [bigint] NULL,
+PRIMARY KEY CLUSTERED 
+(
+       [id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+       [location] ASC,
+       [name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+USE [adlmx]
+GO
+
+/****** Object:  Table [dbo].[last_measurements]    Script Date: 03.06.2024 12:06:59 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[last_measurements](
+       [channelid] [int] NOT NULL,
+       [unixtime] [bigint] NOT NULL,
+       [data] [float] NULL,
+PRIMARY KEY CLUSTERED 
+(
+       [channelid] ASC,
+       [unixtime] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[last_measurements]  WITH CHECK ADD FOREIGN KEY([channelid])
+REFERENCES [dbo].[channels] ([id])
+GO
+
+
+USE [adlmx]
+GO
+
+/****** Object:  Table [dbo].[measurements]    Script Date: 03.06.2024 12:08:12 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[measurements](
+       [channelid] [int] NOT NULL,
+       [unixtime] [bigint] NOT NULL,
+       [data] [float] NULL,
+PRIMARY KEY CLUSTERED 
+(
+       [channelid] ASC,
+       [unixtime] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[measurements]  WITH CHECK ADD FOREIGN KEY([channelid])
+REFERENCES [dbo].[channels] ([id])
+GO
+
+
+USE [adlmx]
+GO
+
+/****** Object:  Table [dbo].[metadata]    Script Date: 03.06.2024 12:08:33 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[metadata](
+       [channelid] [int] NOT NULL,
+       [metaid] [varchar](256) NOT NULL,
+       [metadata] [varchar](1024) NULL,
+PRIMARY KEY CLUSTERED 
+(
+       [channelid] ASC,
+       [metaid] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[metadata]  WITH CHECK ADD FOREIGN KEY([channelid])
+REFERENCES [dbo].[channels] ([id])
+GO
