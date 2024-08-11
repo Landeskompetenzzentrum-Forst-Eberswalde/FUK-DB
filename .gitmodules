@@ -1,0 +1,3 @@
+[submodule "FUC-ftp-server"]
+	path = FUC-ftp-server
+	url = https://github.com/Landeskompetenzzentrum-Forst-Eberswalde/FUC-ftp-server.git
