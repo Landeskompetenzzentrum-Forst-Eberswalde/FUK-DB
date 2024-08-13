@@ -1,8 +1,26 @@
 # https://thingsboard.io/docs/user-guide/install/docker/?ubuntuThingsboardQueue=inmemory
 
 services:
+  web:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #command: npm start
+    volumes:
+      - ./FUC-ftp-server:/usr/src/app
+      #- ./FUC-ftp-server/tmp-output:/usr/src/app/tmp-output
+      #- ./FUC-ftp-server/tmp-input:/usr/src/app/tmp-input
+    ports:
+      - "80:8080"
+    #depends_on:
+    #  - mytb
+    env_file:
+      - ./FUC-ftp-server/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   mytb:
-    restart: always
+    restart: unless-stopped
     image: "thingsboard/tb-postgres"
     ports:
       - "8080:9090"
