@@ -1,0 +1,4 @@
+config/*
+
+# Apple
+.DS_Store
