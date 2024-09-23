@@ -27,6 +27,9 @@ services:
       - "1883:1883"
       - "7070:7070"
       - "5683-5688:5683-5688/udp"
+
+    user: "postgres"  # Run container as postgres user
+
     environment:
       TB_QUEUE_TYPE: in-memory
       # HTTP_BIND_PORT: 8080
@@ -38,6 +41,8 @@ services:
     volumes:
       - ~/.mytb-data:/data
       - ~/.mytb-logs:/var/log/thingsboard
-      # - ./etc/letsencrypt/live/thingsboard.gruenecho.de/fullchain.pem:/config/fullchain.pem
-      # - ./etc/letsencrypt/live/thingsboard.gruenecho.de/privkey.pem:/config/privkey.pem
       - ~/.mytb-config:/config
+
+      - ./postgres-lock:/var/run/postgresql
+      
+      

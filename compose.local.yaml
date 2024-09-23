@@ -27,13 +27,27 @@ services:
       - "1883:1883"
       - "7070:7070"
       - "5683-5688:5683-5688/udp"
+      - "5432:5432"
     environment:
       TB_QUEUE_TYPE: in-memory
-      # HTTP_BIND_PORT: 8080
       SECURITY_USER_LOGIN_CASE_SENSITIVE: false
+
+    user: "postgres"  # Run container as postgres user
+    #command: bash -c "chown -R postgres:postgres /data/db && chmod -R 0700 /data/db && /usr/lib/postgresql/12/bin/postgres -D /data/db"
+
     volumes:
       - ~/.mytb-data:/data
       - ~/.mytb-logs:/var/log/thingsboard
-      # - ./etc/letsencrypt/live/thingsboard.gruenecho.de/fullchain.pem:/config/fullchain.pem
-      # - ./etc/letsencrypt/live/thingsboard.gruenecho.de/privkey.pem:/config/privkey.pem
       - ~/.mytb-config:/config
+
+      - ./postgres-lock:/var/run/postgresql
+
+      #- ./config-postgres/:/data/db/
+
+      #- ./config/pg_hba.conf:/etc/postgresql/12/main/pg_hba.conf
+      #- ./config/postgresql.conf:/etc/postgresql/12/main/postgresql.conf
+      
+
+volumes:
+  postgres-config:
+    driver: local
