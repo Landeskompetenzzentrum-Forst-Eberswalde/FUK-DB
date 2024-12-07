@@ -12,38 +12,60 @@ services:
       #- ./FUC-ftp-server/tmp-output:/usr/src/app/tmp-output
       #- ./FUC-ftp-server/tmp-input:/usr/src/app/tmp-input
     ports:
-      - "80:443"
-    #depends_on:
-    #  - mytb
+      - "80:80" # Change to 80:443 if using SSL
+    depends_on:
+      - thingsboard
     env_file:
       - ./FUC-ftp-server/.env
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  mytb:
+  # https://hub.docker.com/r/prodrigestivill/postgres-backup-local
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    user: postgres:postgres 
+    volumes:
+        - ~/.fuk-backups:/backups
+    #links:
+    #    - thingsboard:POSTGRES_HOST # :${POSTGRES_HOST}
+    depends_on:
+        - thingsboard
+    environment:
+        - POSTGRES_HOST=thingsboard
+        - POSTGRES_DB=thingsboard
+        - POSTGRES_USER=thingsboard
+        - POSTGRES_PASSWORD=postgres
+        # - POSTGRES_PASSWORD_FILE=/run/secrets/db_password <-- alternative for POSTGRES_PASSWORD (to use with docker secrets)
+        # - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+        - SCHEDULE=@daily
+        - BACKUP_ON_START=TRUE
+        - BACKUP_KEEP_DAYS=7
+        - BACKUP_KEEP_WEEKS=4
+        - BACKUP_KEEP_MONTHS=6
+        - HEALTHCHECK_PORT=8080
+  thingsboard:
     restart: unless-stopped
     image: "thingsboard/tb-postgres"
     ports:
-      - "443:9090"
-      - "1883:1883"
-      - "7070:7070"
-      - "5683-5688:5683-5688/udp"
+      - "8080:9090" # Change to 443:9090 if using SSL
+      #- "1883:1883"
+      #- "7070:7070"
+      #- "5683-5688:5683-5688/udp"
       - "5432:5432"
       
-    user: "postgres"  # Run container as postgres user
+    #user: "postgres"  # Run container as postgres user
 
     environment:
       TB_QUEUE_TYPE: in-memory
       # HTTP_BIND_PORT: 8080
       SECURITY_USER_LOGIN_CASE_SENSITIVE: false
-      SSL_ENABLED: true
+      SSL_ENABLED: false
       SSL_CREDENTIALS_TYPE: PEM
-      SSL_PEM_CERT: /config/fullchain.pem
-      SSL_PEM_KEY: /config/privkey.pem
+      SSL_PEM_CERT: /centificates/fullchain.pem
+      SSL_PEM_KEY: /centificates/privkey.pem
     volumes:
-      - ~/.mytb-data:/data
-      - ~/.mytb-logs:/var/log/thingsboard
-      - ~/.mytb-config:/config
+      - ~/.fuk-data:/data
+      - ~/.fuk-logs:/var/log/thingsboard
+      #- ~/.mytb-config:/config
 
-      - ./postgres-lock:/var/run/postgresql
-      
-      
+      #- ./postgres-lock:/var/run/postgresql
