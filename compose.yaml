@@ -1,6 +1,7 @@
 # https://thingsboard.io/docs/user-guide/install/docker/?ubuntuThingsboardQueue=inmemory
 
 services:
+
   web:
     restart: unless-stopped
     build:
@@ -19,6 +20,7 @@ services:
       - ./FUC-ftp-server/.env
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
   # https://hub.docker.com/r/prodrigestivill/postgres-backup-local
   pgbackups:
     image: prodrigestivill/postgres-backup-local
@@ -31,18 +33,17 @@ services:
     depends_on:
         - thingsboard
     environment:
-        - POSTGRES_HOST=thingsboard
-        - POSTGRES_DB=thingsboard
-        - POSTGRES_USER=thingsboard
-        - POSTGRES_PASSWORD=postgres
-        # - POSTGRES_PASSWORD_FILE=/run/secrets/db_password <-- alternative for POSTGRES_PASSWORD (to use with docker secrets)
-        # - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+        - POSTGRES_HOST=${POSTGRES_HOST}
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
         - SCHEDULE=@daily
         - BACKUP_ON_START=TRUE
         - BACKUP_KEEP_DAYS=7
         - BACKUP_KEEP_WEEKS=4
         - BACKUP_KEEP_MONTHS=6
         - HEALTHCHECK_PORT=8080
+
   thingsboard:
     restart: unless-stopped
     image: "thingsboard/tb-postgres"
@@ -52,9 +53,6 @@ services:
       #- "7070:7070"
       #- "5683-5688:5683-5688/udp"
       - "5432:5432"
-      
-    #user: "postgres"  # Run container as postgres user
-
     environment:
       TB_QUEUE_TYPE: in-memory
       # HTTP_BIND_PORT: 8080
@@ -66,6 +64,3 @@ services:
     volumes:
       - ~/.fuk-data:/data
       - ~/.fuk-logs:/var/log/thingsboard
-      #- ~/.mytb-config:/config
-
-      #- ./postgres-lock:/var/run/postgresql

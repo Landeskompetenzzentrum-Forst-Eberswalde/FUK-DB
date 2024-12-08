@@ -59,6 +59,11 @@ The backups are created by the pgbackups docker service.
 
 Backups are created daily at midnight and stored in the folder `~/.fuk-backups/`. Files are named like `thingsboard-20241207.sql.gz`.
 
+Restore
+```bash
+docker exec -i [CONTAINER_ID] psql --username thingsboard -d thingsboard < ~/.fuk-backups/daily/[name].sql.gz
+```
+
 ### Manually
 Backup Database
 ```bash
